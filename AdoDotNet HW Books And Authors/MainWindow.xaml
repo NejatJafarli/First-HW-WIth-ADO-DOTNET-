@@ -1,0 +1,54 @@
+﻿<Window x:Class="AdoDotNet_HW_Books_And_Authors.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AdoDotNet_HW_Books_And_Authors"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.2*"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Button Click="Button_Click">add</Button>
+                <TextBox Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Search</TextBox>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock HorizontalAlignment="Center" FontSize="20" >Table</TextBlock>
+                <ComboBox Grid.Row="1" Name="TableCB" SelectionChanged="TableCB_SelectionChanged" >
+                    <ComboBoxItem Content="Authors" />
+                    <ComboBoxItem Content="Categories" />
+                    <ComboBoxItem Content="Others" />
+                </ComboBox>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock HorizontalAlignment="Center" FontSize="20" >Categories/Authors</TextBlock>
+                <ComboBox SelectionChanged="CategoriesAndAuthors_SelectionChanged" Grid.Row="1" Name="CategoriesAndAuthors"></ComboBox>
+            </Grid>
+        </Grid>
+        <DataGrid Grid.Row="1" Name="DG">
+            
+        </DataGrid>
+    </Grid>
+</Window>

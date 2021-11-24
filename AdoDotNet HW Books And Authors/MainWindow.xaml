@@ -47,7 +47,7 @@
                 <ComboBox SelectionChanged="CategoriesAndAuthors_SelectionChanged" Grid.Row="1" Name="CategoriesAndAuthors"></ComboBox>
             </Grid>
         </Grid>
-        <DataGrid Grid.Row="1" Name="DG">
+        <DataGrid Grid.Row="1" Name="DG" PreviewKeyDown="DG_PreviewKeyDown" PreviewMouseDoubleClick="DG_PreviewMouseDoubleClick">
             
         </DataGrid>
     </Grid>

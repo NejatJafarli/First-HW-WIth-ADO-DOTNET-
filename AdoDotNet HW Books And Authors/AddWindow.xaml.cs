@@ -164,6 +164,13 @@ namespace AdoDotNet_HW_Books_And_Authors
             PressQuery();
         }
 
+        public AddWindow(string BookName)
+        {
+            InitializeComponent();
+            DataContext=this;
+
+        }
+
         public void CategoryQuery()
         {
             SqlDataReader reader = null;

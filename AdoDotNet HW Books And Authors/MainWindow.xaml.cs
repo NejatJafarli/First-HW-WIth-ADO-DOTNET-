@@ -23,13 +23,13 @@ namespace AdoDotNet_HW_Books_And_Authors
     /// </summary>
     public partial class MainWindow : Window
     {
-        public SqlConnection Conn { get; set; }=new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionStringToDB"].ConnectionString);
+        public SqlConnection Conn { get; set; } = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionStringToDB"].ConnectionString);
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-            TableCB.SelectedIndex= 1;
-            CategoriesAndAuthors.SelectedIndex= 1;
+            TableCB.SelectedIndex = 1;
+            CategoriesAndAuthors.SelectedIndex = 1;
         }
 
         private void TableCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -115,12 +115,11 @@ namespace AdoDotNet_HW_Books_And_Authors
             SqlConnection sqlConnection;
             using (sqlConnection = new SqlConnection(Conn.ConnectionString))
             {
-                var cmdString = $@"SELECT CONCAT(FirstName, LastName) AS 'Author', Books.Name AS 'BookName' FROM Authors JOIN Books ON Books.Id_Author = Authors.Id WHERE CONCAT(FirstName, LastName) = '{CategoriesAndAuthors.SelectedItem}'";
+                var cmdString = $@"SELECT CONCAT(FirstName, LastName) AS 'Author', Books.Name AS 'Book' FROM Authors JOIN Books ON Books.Id_Author = Authors.Id WHERE CONCAT(FirstName, LastName) = '{CategoriesAndAuthors.SelectedItem}'";
 
                 SqlCommand sqlCommand = new SqlCommand(cmdString, sqlConnection);
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
                 DataTable dataTable = new DataTable(CategoriesAndAuthors.SelectedItem.ToString());
-
                 sqlDataAdapter.Fill(dataTable);
 
                 DG.ItemsSource = dataTable.DefaultView;
@@ -145,6 +144,34 @@ namespace AdoDotNet_HW_Books_And_Authors
             AddWindow addWindow = new AddWindow();
             addWindow.ShowDialog();
 
+        }
+
+        private void DG_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                if (DG.SelectedItem is null) return;
+                DataRowView row = (DataRowView)DG.SelectedItem;
+                row.Delete();
+
+                try
+                {
+                    Conn.Open();
+                    SqlCommand cmd = new SqlCommand($"DELETE Books WHERE Name='{row["Book"]}'", Conn);
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    Conn?.Close();
+                }
+
+            }
+        }
+
+        private void DG_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            AddWindow addWindow = new AddWindow(((DataRowView)DG.SelectedItem).Row.Table.Columns[1].ColumnName);
+            addWindow.ShowDialog();
         }
     }
 }

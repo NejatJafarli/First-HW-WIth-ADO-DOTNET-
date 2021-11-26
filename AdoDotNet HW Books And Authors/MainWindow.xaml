@@ -9,7 +9,7 @@
         >
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.2*"></RowDefinition>
+            <RowDefinition Height="0.3*"></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
         <Grid>
@@ -24,7 +24,14 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
                 <Button Click="Button_Click">add</Button>
-                <TextBox Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Search</TextBox>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.5*"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock HorizontalAlignment="Center"> Search</TextBlock>
+                <TextBox IsEnabled="False"  Margin="3" TextChanged="TextBox_TextChanged" Name="SearchText" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></TextBox>
+                </Grid>
             </Grid>
             <Grid>
                 <Grid.RowDefinitions>

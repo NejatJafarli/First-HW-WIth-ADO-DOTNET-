@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace AdoDotNet_HW_Books_And_Authors
 {
@@ -37,10 +26,18 @@ namespace AdoDotNet_HW_Books_And_Authors
             if (TableCB.SelectedIndex == 0)
             {
                 AuthorsQuery();
+                SearchText.IsEnabled = false;
             }
             else if (TableCB.SelectedIndex == 1)
             {
                 CategoryQuery();
+                SearchText.IsEnabled = false;
+            }
+            else if (TableCB.SelectedIndex == 2)
+            {
+                FillDataGrid();
+                CategoriesAndAuthors.Items.Clear();
+                SearchText.IsEnabled = true;
             }
         }
         public void CategoryQuery()
@@ -98,7 +95,6 @@ namespace AdoDotNet_HW_Books_And_Authors
 
         private void CategoriesAndAuthors_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // SELECT CONCAT(FirstName, LastName) AS 'Author', Books.Name AS 'BookName' FROM Authors JOIN Books ON Books.Id_Author = Authors.Id WHERE CONCAT(FirstName, LastName) = '{CatAut.SelectedItem}'
             if (CategoriesAndAuthors.SelectedItem is null) return;
             if (TableCB.SelectedIndex == 0)
             {
@@ -108,8 +104,25 @@ namespace AdoDotNet_HW_Books_And_Authors
             {
                 FillDataGridForCategory();
             }
+            else
+                return;
+         
         }
+        private void FillDataGrid()
+        {
+            SqlConnection sqlConnection;
+            using (sqlConnection = new SqlConnection(Conn.ConnectionString))
+            {
+                var cmdString = $@"SELECT * FROM Books ";
 
+                SqlCommand sqlCommand = new SqlCommand(cmdString, sqlConnection);
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                DataTable dataTable = new DataTable();
+                sqlDataAdapter.Fill(dataTable);
+
+                DG.ItemsSource = dataTable.DefaultView;
+            }
+        }
         private void FillDataGridForAuthors()
         {
             SqlConnection sqlConnection;
@@ -172,6 +185,34 @@ namespace AdoDotNet_HW_Books_And_Authors
         {
             AddWindow addWindow = new AddWindow(((DataRowView)DG.SelectedItem).Row.Table.Columns[1].ColumnName);
             addWindow.ShowDialog();
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (SearchText.Text != "")
+            {
+                SqlConnection sqlConnection;
+                using (sqlConnection = new SqlConnection(Conn.ConnectionString))
+                {
+
+                    ComboBoxItem cbi = (ComboBoxItem)TableCB.SelectedItem;
+
+
+                    var cmdString = $"SELECT * FROM Books WHERE Name LIKE '%{SearchText.Text}%'";
+
+                    SqlCommand sqlCommand = new SqlCommand(cmdString, sqlConnection);
+                    SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                    DataTable dataTable = new DataTable(cbi.Content.ToString());
+
+                    sqlDataAdapter.Fill(dataTable);
+
+                    DG.ItemsSource = dataTable.DefaultView;
+                }
+            }
+            else if (SearchText.Text == "")
+            {
+                FillDataGrid();
+            }
         }
     }
 }

@@ -27,10 +27,13 @@ namespace AdoDotNet_HW_Books_And_Authors
             {
                 AuthorsQuery();
                 SearchText.IsEnabled = false;
+                CategoriesAndAuthors.SelectedIndex = 0;
+
             }
             else if (TableCB.SelectedIndex == 1)
             {
                 CategoryQuery();
+                CategoriesAndAuthors.SelectedIndex = 0;
                 SearchText.IsEnabled = false;
             }
             else if (TableCB.SelectedIndex == 2)
@@ -57,7 +60,6 @@ namespace AdoDotNet_HW_Books_And_Authors
                 {
                     CategoriesAndAuthors.Items.Add(reader[0].ToString());
                 }
-                CategoriesAndAuthors.SelectedIndex = 1;
             }
             finally
             {
@@ -82,7 +84,6 @@ namespace AdoDotNet_HW_Books_And_Authors
                 {
                     CategoriesAndAuthors.Items.Add(reader[0].ToString());
                 }
-                CategoriesAndAuthors.SelectedIndex = 1;
 
             }
             finally
@@ -106,7 +107,7 @@ namespace AdoDotNet_HW_Books_And_Authors
             }
             else
                 return;
-         
+
         }
         private void FillDataGrid()
         {
@@ -128,7 +129,7 @@ namespace AdoDotNet_HW_Books_And_Authors
             SqlConnection sqlConnection;
             using (sqlConnection = new SqlConnection(Conn.ConnectionString))
             {
-                var cmdString = $@"SELECT CONCAT(FirstName, LastName) AS 'Author', Books.Name AS 'Book' FROM Authors JOIN Books ON Books.Id_Author = Authors.Id WHERE CONCAT(FirstName, LastName) = '{CategoriesAndAuthors.SelectedItem}'";
+                var cmdString = $@"SELECT CONCAT(FirstName, LastName) AS 'Author', Books.Name AS 'Name' FROM Authors JOIN Books ON Books.Id_Author = Authors.Id WHERE CONCAT(FirstName, LastName) = '{CategoriesAndAuthors.SelectedItem}'";
 
                 SqlCommand sqlCommand = new SqlCommand(cmdString, sqlConnection);
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
@@ -143,7 +144,7 @@ namespace AdoDotNet_HW_Books_And_Authors
             SqlConnection sqlConnection;
             using (sqlConnection = new SqlConnection(Conn.ConnectionString))
             {
-                var cmd = $@"SELECT Categories.Name AS 'Category', Books.Name AS 'Book' FROM Categories JOIN Books ON Books.Id_Category = Categories.Id WHERE Categories.Name = '{CategoriesAndAuthors.SelectedItem}'";
+                var cmd = $@"SELECT Categories.Name AS 'Category', Books.Name AS 'Name' FROM Categories JOIN Books ON Books.Id_Category = Categories.Id WHERE Categories.Name = '{CategoriesAndAuthors.SelectedItem}'";
                 SqlCommand sqlCommand = new SqlCommand(cmd, sqlConnection);
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
                 DataTable dataTable = new DataTable(CategoriesAndAuthors.SelectedItem.ToString());
@@ -156,7 +157,20 @@ namespace AdoDotNet_HW_Books_And_Authors
         {
             AddWindow addWindow = new AddWindow();
             addWindow.ShowDialog();
-
+            if (TableCB.SelectedIndex == 0)
+            {
+                AuthorsQuery();
+                CategoriesAndAuthors.SelectedIndex = 0;
+                FillDataGridForAuthors();
+            }
+            else if (TableCB.SelectedIndex == 1)
+            {
+                CategoryQuery();
+                CategoriesAndAuthors.SelectedIndex = 0;
+                FillDataGridForCategory();
+            }
+            else if (TableCB.SelectedIndex == 2)
+                FillDataGrid();
         }
 
         private void DG_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -170,7 +184,7 @@ namespace AdoDotNet_HW_Books_And_Authors
                 try
                 {
                     Conn.Open();
-                    SqlCommand cmd = new SqlCommand($"DELETE Books WHERE Name='{row["Book"]}'", Conn);
+                    SqlCommand cmd = new SqlCommand($"DELETE Books WHERE Name='{row["Name"]}'", Conn);
                     cmd.ExecuteNonQuery();
                 }
                 finally
@@ -183,8 +197,25 @@ namespace AdoDotNet_HW_Books_And_Authors
 
         private void DG_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            AddWindow addWindow = new AddWindow(((DataRowView)DG.SelectedItem).Row.Table.Columns[1].ColumnName);
+            if (DG.SelectedItem is null) return;
+            AddWindow addWindow = new AddWindow(((DataRowView)DG.SelectedItem).Row["Name"].ToString());
             addWindow.ShowDialog();
+            if (TableCB.SelectedIndex == 0)
+            {
+                var temp= CategoriesAndAuthors.SelectedIndex;
+                AuthorsQuery();
+                CategoriesAndAuthors.SelectedIndex = temp;
+                FillDataGridForAuthors();
+            }
+            else if (TableCB.SelectedIndex == 1)
+            {
+                var temp= CategoriesAndAuthors.SelectedIndex;
+                CategoryQuery();
+                CategoriesAndAuthors.SelectedIndex = temp;
+                FillDataGridForCategory();
+            }
+            else if (TableCB.SelectedIndex == 2)
+                FillDataGrid();
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -213,6 +244,11 @@ namespace AdoDotNet_HW_Books_And_Authors
             {
                 FillDataGrid();
             }
+        }
+
+        private void DG_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        {
+
         }
     }
 }

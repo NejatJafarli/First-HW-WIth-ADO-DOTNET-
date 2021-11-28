@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -153,7 +154,7 @@ namespace AdoDotNet_HW_Books_And_Authors
 
 
 
-
+        public bool IsUpdate { get; set; } = false;
         public AddWindow()
         {
             InitializeComponent();
@@ -162,13 +163,116 @@ namespace AdoDotNet_HW_Books_And_Authors
             AuthorsQuery();
             ThemesQuery();
             PressQuery();
+            IsUpdate = false;
         }
 
         public AddWindow(string BookName)
         {
             InitializeComponent();
-            DataContext=this;
+            DataContext = this;
+            BookNameQuery(BookName);
+            IsUpdate = true;
+        }
 
+        string BookName;
+        string BookComment;
+
+        string BookCat;
+        string BookAut;
+        string BookThem;
+        string BookPress;
+
+        int BookId;
+        int BookYear;
+        int BookQuantity;
+        int BookPages;
+
+
+        public void BookNameQuery(string name)
+        {
+            SqlDataReader reader = null;
+            try
+            {
+                CategoryQuery();
+                ThemesQuery();
+                AuthorsQuery();
+                PressQuery();
+
+                Conn.Open();
+
+                SqlCommand cmd = new SqlCommand($"SELECT * FROM Books Where @BookName = Books.Name", Conn);
+
+                cmd.Parameters.Add("@BookName", System.Data.SqlDbType.NVarChar).Value = name;
+                reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    TextName = reader["Name"].ToString();
+                    BookName = TextName;
+
+                    Comment = reader["Comment"].ToString();
+                    BookComment = Comment;
+
+                    Id = int.Parse((reader["Id"].ToString()));
+                    BookId = Id;
+
+                    Quanity = int.Parse((reader["Quantity"].ToString()));
+                    BookQuantity = Quanity;
+
+                    Pages = int.Parse((reader["Pages"].ToString()));
+                    BookPages = Pages;
+
+                    Year = int.Parse((reader["YearPress"].ToString()));
+                    BookYear = Year;
+
+                    int idCat = int.Parse(reader["Id_Category"].ToString());
+                    int idAut = int.Parse(reader["Id_Author"].ToString());
+                    int idThem = int.Parse(reader["Id_Themes"].ToString());
+                    int idPress = int.Parse(reader["Id_Press"].ToString());
+
+
+                    Conn.Close();
+                    Conn.Open();
+
+                    SqlDataAdapter cmd2 = new SqlDataAdapter($"SELECT Name FROM Categories WHERE Id=@Id", Conn);
+                    cmd2.SelectCommand.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = idCat;
+
+                    DataTable dataTable = new DataTable();
+                    cmd2.Fill(dataTable);
+                    CategoriesSelection = dataTable.Rows[0][0].ToString();
+                    BookCat = CategoriesSelection;
+
+                    cmd2 = new SqlDataAdapter($"SELECT CONCAT(FirstName,LastName) FROM Authors WHERE Id=@Id", Conn);
+                    cmd2.SelectCommand.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = idAut;
+
+                    dataTable = new DataTable();
+                    cmd2.Fill(dataTable);
+                    AuthorsSelection = dataTable.Rows[0][0].ToString();
+                    BookAut = AuthorsSelection;
+
+                    cmd2 = new SqlDataAdapter($"SELECT Name FROM Themes WHERE Id=@Id", Conn);
+                    cmd2.SelectCommand.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = idThem;
+
+                    dataTable = new DataTable();
+                    cmd2.Fill(dataTable);
+                    ThemesSelection = dataTable.Rows[0][0].ToString();
+                    BookThem = ThemesSelection;
+
+                    cmd2 = new SqlDataAdapter($"SELECT Name FROM Press WHERE Id=@Id", Conn);
+                    cmd2.SelectCommand.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = idPress;
+
+                    dataTable = new DataTable();
+                    cmd2.Fill(dataTable);
+                    PressSelection = dataTable.Rows[0][0].ToString();
+                    BookPress = PressSelection;
+
+
+                }
+            }
+            finally
+            {
+                reader?.Close();
+                Conn?.Close();
+            }
         }
 
         public void CategoryQuery()
@@ -261,63 +365,235 @@ namespace AdoDotNet_HW_Books_And_Authors
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
-            int PressId=0, CategoriesId=0, ThemesId=0, AuthorsId=0;
-
-            SqlCommand cmd = null;
-            SqlDataReader reader = null;
-            try
+            if (!IsUpdate)
             {
-                Conn.Open();
+                int PressId = 0, CategoriesId = 0, ThemesId = 0, AuthorsId = 0;
 
-                cmd = new SqlCommand($"SELECT Id FROM Press WHERE Press.[Name]='{PressSelection}'", Conn);
-                reader = cmd.ExecuteReader();
+                SqlCommand cmd = null;
+                SqlDataReader reader = null;
+                try
+                {
+                    Conn.Open();
 
-                if (reader.Read())
-                    PressId = Convert.ToInt32(reader[0].ToString());
+                    cmd = new SqlCommand($"SELECT Id FROM Press WHERE Press.[Name]='{PressSelection}'", Conn);
+                    reader = cmd.ExecuteReader();
 
-                reader?.Close();
+                    if (reader.Read())
+                        PressId = Convert.ToInt32(reader[0].ToString());
 
-
-
-                cmd = new SqlCommand($"SELECT Id FROM Themes WHERE Themes.Name='{ThemesSelection}'", Conn);
-                reader = cmd.ExecuteReader();
-
-                if (reader.Read())
-                    ThemesId = Convert.ToInt32(reader[0].ToString());
+                    reader?.Close();
 
 
-                reader?.Close();
 
-                cmd = new SqlCommand($"SELECT Id FROM Categories WHERE Categories.Name='{CategoriesSelection}'", Conn);
-                reader = cmd.ExecuteReader();
+                    cmd = new SqlCommand($"SELECT Id FROM Themes WHERE Themes.Name='{ThemesSelection}'", Conn);
+                    reader = cmd.ExecuteReader();
 
-                if (reader.Read())
-                    CategoriesId = Convert.ToInt32(reader[0].ToString());
+                    if (reader.Read())
+                        ThemesId = Convert.ToInt32(reader[0].ToString());
 
-                reader?.Close();
 
-                cmd = new SqlCommand($"SELECT Id FROM Authors WHERE CONCAT(Authors.FirstName,Authors.LastName)='{AuthorsSelection}'", Conn);
-                reader = cmd.ExecuteReader();
+                    reader?.Close();
 
-                if (reader.Read())
-                    AuthorsId = Convert.ToInt32(reader[0].ToString());
+                    cmd = new SqlCommand($"SELECT Id FROM Categories WHERE Categories.Name='{CategoriesSelection}'", Conn);
+                    reader = cmd.ExecuteReader();
 
-                reader?.Close();
+                    if (reader.Read())
+                        CategoriesId = Convert.ToInt32(reader[0].ToString());
 
-                string insertString = $"INSERT INTO Books (Id,[Name],Pages,YearPress,Id_Themes,Id_Category,Id_Author,Id_Press,Comment,Quantity) VALUES ({Id},'{TextName}',{Pages},{Year},{ThemesId},{CategoriesId},{AuthorsId},{PressId},'{Comment}',{Quanity})";
+                    reader?.Close();
 
-                cmd = new SqlCommand(insertString, Conn);
-                cmd.ExecuteNonQuery();
+                    cmd = new SqlCommand($"SELECT Id FROM Authors WHERE CONCAT(Authors.FirstName,Authors.LastName)='{AuthorsSelection}'", Conn);
+                    reader = cmd.ExecuteReader();
 
+                    if (reader.Read())
+                        AuthorsId = Convert.ToInt32(reader[0].ToString());
+
+                    reader?.Close();
+
+                    string insertString = $"INSERT INTO Books (Id,[Name],Pages,YearPress,Id_Themes,Id_Category,Id_Author,Id_Press,Comment,Quantity) VALUES ({Id},'{TextName}',{Pages},{Year},{ThemesId},{CategoriesId},{AuthorsId},{PressId},'{Comment}',{Quanity})";
+
+                    cmd = new SqlCommand(insertString, Conn);
+                    cmd.ExecuteNonQuery();
+
+                }
+                finally
+                {
+                    Conn?.Close();
+                    reader?.Close();
+                }
+
+                this.Close();
             }
-            finally
+            else
             {
-                Conn?.Close();
-                reader?.Close();
-            }
+                SqlCommand cmd = null;
+                try
+                {
+                    if (Id != BookId)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET Id=@id Where Id=@bookId ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@bookId", SqlDbType.Int).Value = BookId;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookName != TextName)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET Name=@Name Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@Name", SqlDbType.NVarChar).Value = TextName;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookComment != Comment)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET Comment=@Comment Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@Comment", SqlDbType.NVarChar).Value = Comment;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookPages != Pages)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET Pages=@Pages Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@Pages", SqlDbType.Int).Value = Pages;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookYear != Year)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET YearPress=@Year Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@Pages", SqlDbType.Int).Value = Year;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookQuantity != Quanity)
+                    {
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET Quantity=@Quanity Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@Quanity", SqlDbType.Int).Value = Quanity;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookCat != CategoriesSelection)
+                    {
+                        int NewCatId=0;
+                        SqlDataReader reader = null;
+                        try
+                        {
+                            Conn.Open();
+                            cmd = new SqlCommand($"SELECT Id FROM Categories WHERE Categories.Name='{CategoriesSelection}'", Conn);
+                            reader = cmd.ExecuteReader();
 
-            this.Close();
+                            if (reader.Read())
+                                NewCatId = Convert.ToInt32(reader[0].ToString());
+                        }
+                        finally
+                        {
+                            reader?.Close();
+                            Conn?.Close();
+                        }
+
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET id_Category=@NewCatId Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@NewCatId", SqlDbType.Int).Value = NewCatId;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookAut != AuthorsSelection)
+                    {
+                        int NewAutId = 0;
+                        SqlDataReader reader = null;
+                        try
+                        {
+                            Conn.Open();
+                            cmd = new SqlCommand($"SELECT Id FROM Authors WHERE CONCAT(Authors.FirstName,Authors.LastName)='{AuthorsSelection}'", Conn);
+                            reader = cmd.ExecuteReader();
+
+                            if (reader.Read())
+                                NewAutId = Convert.ToInt32(reader[0].ToString());
+                        }
+                        finally
+                        {
+                            reader?.Close();
+                            Conn?.Close();
+                        }
+
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET id_Author=@NewAutId Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@NewAutId", SqlDbType.Int).Value = NewAutId;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookThem!=ThemesSelection)
+                    {
+                        int NewThemId = 0;
+                        SqlDataReader reader = null;
+                        try
+                        {
+                            Conn.Open();
+                            cmd = new SqlCommand($"SELECT Id FROM Themes WHERE Themes.Name='{ThemesSelection}'", Conn);
+                            reader = cmd.ExecuteReader();
+
+                            if (reader.Read())
+                                NewThemId = Convert.ToInt32(reader[0].ToString());
+                        }
+                        finally
+                        {
+                            reader?.Close();
+                            Conn?.Close();
+                        }
+
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET id_Themes=@NewThemId Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@NewThemId", SqlDbType.Int).Value = NewThemId;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    if (BookPress != PressSelection)
+                    {
+                        int NewPressId = 0;
+                        SqlDataReader reader = null;
+                        try
+                        {
+                            Conn.Open();
+                            cmd = new SqlCommand($"SELECT Id FROM Press WHERE Press.[Name]='{PressSelection}'", Conn);
+                            reader = cmd.ExecuteReader();
+
+                            if (reader.Read())
+                                NewPressId = Convert.ToInt32(reader[0].ToString());
+                        }
+                        finally
+                        {
+                            reader?.Close();
+                            Conn?.Close();
+                        }
+
+                        Conn.Open();
+                        cmd = new SqlCommand("UPDATE Books SET id_Press=@NewPressId Where Id=@id ", Conn);
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = Id;
+                        cmd.Parameters.Add("@NewPressId", SqlDbType.Int).Value = NewPressId;
+                        cmd.ExecuteNonQuery();
+                        Conn?.Close();
+                    }
+                    this.Close();
+                }
+                finally
+                {
+                    Conn?.Close();
+                }
+            }
         }
     }
 }
